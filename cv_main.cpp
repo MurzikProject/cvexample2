@@ -54,6 +54,10 @@ int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
     // Read video from camera
     VideoCapture video(0);
 
+    // Set maximum camera resolution (set FullHD, camera resolution <= HD)
+    video.set(CAP_PROP_FRAME_WIDTH,1920);
+    video.set(CAP_PROP_FRAME_HEIGHT,1080);
+
     // Exit if video is not opened
     if(!video.isOpened())
     {
@@ -61,20 +65,23 @@ int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
         return 1;
     }
 
-    //Read first frame
+    // Read first frame
     Mat frame;
     bool ok = video.read(frame);
 
     // Define initial bounding box
     //Rect2d bbox(287,23,86,320);
-    Rect bbox(287,23,86,320);
+    //Rect bbox(287,23,86,320);
 
     // Uncomment the line below to select a different bounding box 
-    bbox = selectROI(frame, false); 
+    Rect bbox = selectROI(frame, false); 
     // Display bounding box. 
     rectangle(frame,bbox,Scalar(255,0,0),2,1);
 
-    imshow("Tracking",frame);
+    String window_name = "Tracking | esc to quit";
+    namedWindow(window_name, WINDOW_NORMAL); //resizable window;
+
+    imshow(window_name,frame);
     needTracker->init(frame,bbox);
 
     while(video.read(frame))
@@ -92,21 +99,22 @@ int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
         {
             // Tracking success : Draw the tracked object
             rectangle(frame,bbox,Scalar(255,0,0),2,1);
+            putText(frame,"Enemy target",Point(bbox.x,bbox.y-5),FONT_HERSHEY_COMPLEX,1,Scalar(0,0,255),2);
         }
         else
         {
             // Tracking failure detected.
-            putText(frame,"Tracking failure detected",Point(10,80),FONT_HERSHEY_DUPLEX,0.5,Scalar(0,0,255),2);
+            putText(frame,"Tracking failure detected",Point(10,80),FONT_HERSHEY_PLAIN,1,Scalar(0,0,255),2);
         }
 
         // Display tracker type on frame.
-        putText(frame, needTrackerName + " Tracker", Point(10,20), FONT_HERSHEY_DUPLEX, 0.5, Scalar(50,170,50),2);
+        putText(frame, needTrackerName + " Tracker", Point(10,20), FONT_HERSHEY_PLAIN, 1, Scalar(50,170,50),2);
 
         // Display FPS on frame.
-        putText(frame, "FPS : " + SSTR(int(fps)), Point(10,50), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0,128,255), 2);
+        putText(frame, "FPS : " + SSTR(int(fps)), Point(10,50), FONT_HERSHEY_PLAIN, 1, Scalar(0,128,255), 2);
         
         // Display frame.
-        imshow("Tracking", frame);
+        imshow(window_name, frame);
 
         // Exit if ESC pressed.
         int k = waitKey(1);
