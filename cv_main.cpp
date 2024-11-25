@@ -41,6 +41,7 @@ int main(int argc, char const *argv[])
 
     cout << "Tracker "+trackerType+" are selected." << "\n";
 
+    // Launch video processing
     videoProcessing(tracker, trackerType);
    
     return 0;
@@ -49,7 +50,7 @@ int main(int argc, char const *argv[])
 int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
 {
     // Read video from file
-    //VideoCapture video("/home/anton/Projects/cvexample2/build/media/pixel.mp4");
+    //VideoCapture video("pixel.mp4",CAP_FFMPEG);
     
     // Read video from camera
     VideoCapture video(0);
@@ -69,16 +70,16 @@ int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
     Mat frame;
     bool ok = video.read(frame);
 
-    // Define initial bounding box
-    //Rect2d bbox(287,23,86,320);
-    //Rect bbox(287,23,86,320);
+    // Mirrow frame
+    flip(frame,frame,1);
 
     // Uncomment the line below to select a different bounding box 
     Rect bbox = selectROI(frame, false); 
+
     // Display bounding box. 
     rectangle(frame,bbox,Scalar(255,0,0),2,1);
 
-    String window_name = "Tracking | esc to quit";
+    String window_name = "Tracking with " + needTrackerName + " tracker | esc to quit";
     namedWindow(window_name, WINDOW_NORMAL); //resizable window;
 
     imshow(window_name,frame);
@@ -86,6 +87,9 @@ int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
 
     while(video.read(frame))
     {
+        // Mirror video
+        flip(frame,frame,1);
+        
         // Start timer
         double timer = (double)getTickCount();
 
@@ -114,6 +118,7 @@ int videoProcessing(Ptr<Tracker> needTracker, String needTrackerName)
         putText(frame, "FPS : " + SSTR(int(fps)), Point(10,50), FONT_HERSHEY_PLAIN, 1, Scalar(0,128,255), 2);
         
         // Display frame.
+        
         imshow(window_name, frame);
 
         // Exit if ESC pressed.
